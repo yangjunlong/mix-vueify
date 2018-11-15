@@ -1,6 +1,6 @@
 {
   "name": "mix-vueify",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Vue单文件组件编译工具",
   "main": "index.js",
   "scripts": {
@@ -11,5 +11,15 @@
     "Vue"
   ],
   "author": "sobird",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "babel-core": "^6.26.3",
+    "babel-preset-es2015": "^6.24.1",
+    "deasync": "^0.1.14",
+    "lru-cache": "^4.1.3",
+    "postcss": "^5.2.18",
+    "postcss-selector-parser": "^3.1.1",
+    "vue-template-compiler": "^2.5.17",
+    "vue-template-es2015-compiler": "^1.6.0"
+  }
 }

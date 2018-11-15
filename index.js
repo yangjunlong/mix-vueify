@@ -17,6 +17,8 @@ var rewriteStyle = require('./lib/style-rewriter');
 module.exports = function(content, secretKey, conf) {
   var output = [];
   var script = '';
+  var deps   = [];
+
   var hash = crypto.createHmac('sha256', secretKey);
   var scopeId =  '_v-' + hash.update(content).digest('hex').substring(0, 8);
 
@@ -36,6 +38,8 @@ module.exports = function(content, secretKey, conf) {
   } else {
     script += 'module.exports = {}';
   }
+
+  deps = depsParser(script);
 
   output.push(script);
 
@@ -76,7 +80,10 @@ module.exports = function(content, secretKey, conf) {
   	output.push('require.loadCss({content: '+JSON.stringify(styles.join('\n'))+'})');
   }
 
-  console.log(output.join('\n'));
+  return {
+    deps: deps,
+    code: output.join('\n')
+  }
 };
 
 // utils
@@ -98,3 +105,54 @@ function compileTemplate (template) {
 function toFunction (code) {
   return transpile('function render () {' + code + '}')
 }
+
+
+var rRequire = /"(?:[^\\"\r\n\f]|\\[\s\S])*"|'(?:[^\\'\n\r\f]|\\[\s\S])*'|(\/\/[^\r\n\f]+|\/\*[\s\S]+?(?:\*\/|$))|\b(require\.async|require\.ensure|require)\s*\(\s*("(?:[^\\"\r\n\f]|\\[\s\S])*"|'(?:[^\\'\n\r\f]|\\[\s\S])*'|\[[\s\S]*?\])\s*/g;
+function depsParser (script) {
+  var deps = [];
+
+  script.replace(rRequire, function(m, comment, type, params) {
+  
+    if (type) {
+      var moduleId = params.trim().replace(/^["|'](.*)["|']$/g, '$1');
+
+      switch (type) {
+        // 异步依赖
+        case 'require.async':
+          deps.push({
+            moduleId: moduleId,
+            mode: 'require.async'
+          });
+          break;
+        case 'require.ensure':
+          deps.push({
+            moduleId: moduleId,
+            mode: 'require.ensure'
+          });
+          break;
+        case 'require':
+          deps.push({
+            moduleId: moduleId,
+            mode: 'require'
+          });
+          break;
+      }
+    }
+    // 注释
+    if(comment) {
+
+    }
+  });
+
+  return deps;
+}
+
+
+
+
+// test 
+// var fs = require('fs');
+// var content = fs.readFileSync('./test.vue', 'utf8');
+
+// var result = module.exports(content, '11', {});
+// console.log(result);

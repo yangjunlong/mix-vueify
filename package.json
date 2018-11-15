@@ -1,6 +1,6 @@
 {
   "name": "mix-vueify",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Vue单文件组件编译工具",
   "main": "index.js",
   "scripts": {
